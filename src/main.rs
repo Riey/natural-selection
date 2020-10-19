@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
+use rand::{thread_rng, Rng};
 
 const BACK_COLOR: Color = Color::BLACK;
 
@@ -8,7 +9,7 @@ fn main() {
         .add_default_plugins()
         .add_resource(ClearColor(BACK_COLOR))
         .add_resource(SimulationState::prepare(2, 20))
-        .add_resource(TurnTimer(Timer::from_seconds(5.0, true)))
+        .add_resource(TurnTimer(Timer::from_seconds(20.0, true)))
         .add_resource(TurnCount(0))
         .add_startup_system(setup.system())
         .add_system(simulation.system())
@@ -16,10 +17,15 @@ fn main() {
         .add_system(movement_system.system())
         .add_system(turn_system.system())
         .add_system(life_display_system.system())
+        .add_system(random_move_system.system())
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut materials: ResMut<Assets<ColorMaterial>>) {
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     let creature_texture = asset_server
         .load("assets/creature.png")
         .expect("Load creature texture");
@@ -101,6 +107,10 @@ impl Creature {
     pub const fn will_die(&self) -> bool {
         self.life == 0
     }
+
+    pub fn velocity_mut(&mut self) -> &mut Vec2 {
+        &mut self.velocity
+    }
 }
 
 struct Food {}
@@ -122,7 +132,6 @@ fn simulation(
             creature_count,
             food_count,
         } => {
-
             for i in 0..*creature_count {
                 commands
                     .spawn(SpriteComponents {
@@ -181,6 +190,7 @@ fn eat_system(
 
             if let Some(_collision) = collision {
                 creature.eat_food();
+                println!("yummy");
                 commands.despawn(food_entity);
             }
         }
@@ -216,25 +226,36 @@ fn turn_system(
     turn_count.0 += 1;
 
     for (creature_entity, mut creature) in &mut creature_query.iter() {
-        creature.time_pass();
-
         if creature.will_die() {
             commands.despawn(creature_entity);
         } else {
             // TODO: duplicate creature
         }
+
+        creature.time_pass();
     }
 }
 
 fn life_display_system(
     sprites: Res<GameSprites>,
-    mut creature_query: Query<(&Creature, &mut SpriteComponents)>,
+    mut creature_query: Query<(&Creature, &mut Handle<ColorMaterial>)>,
 ) {
     for (creature, mut sprite) in &mut creature_query.iter() {
-        sprite.material = if creature.will_die() {
+        *sprite = if creature.will_die() {
             sprites.creature
         } else {
             sprites.creature_filled
         };
+    }
+}
+
+fn random_move_system(mut creature_query: Query<(&mut Creature,)>) {
+    let mut rng = thread_rng();
+
+    for (mut creature,) in &mut creature_query.iter() {
+        let x = rng.gen_range(-10.0, 10.0);
+        let y = rng.gen_range(-50.0, 10.0);
+        *creature.velocity_mut().x_mut() = x;
+        *creature.velocity_mut().y_mut() = y;
     }
 }
