@@ -5,7 +5,7 @@ use grid::Grid;
 use rand::{seq::IteratorRandom, thread_rng, Rng};
 
 const BACK_COLOR: Color = Color::BLACK;
-const GRID_SIZE: (usize, usize) = (600, 600);
+const GRID_SIZE: (usize, usize) = (800, 300);
 
 fn main() {
     App::build()
@@ -335,6 +335,8 @@ fn life_display_system(
 }
 
 fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,)>) {
+    const MAX_SPEED: f32 = 150.0 / 2.0;
+
     let mut rng = thread_rng();
 
     for (mut creature,) in &mut creature_query.iter() {
@@ -344,8 +346,8 @@ fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,
             continue;
         }
 
-        let x = rng.gen_range(-50.0, 50.0);
-        let y = rng.gen_range(-50.0, 50.0);
+        let x = rng.gen_range(-MAX_SPEED, MAX_SPEED);
+        let y = rng.gen_range(-MAX_SPEED, MAX_SPEED);
         *creature.velocity_mut().x_mut() = x;
         *creature.velocity_mut().y_mut() = y;
     }
