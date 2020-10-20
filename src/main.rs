@@ -1,5 +1,6 @@
 use bevy::math::const_vec2;
 use bevy::prelude::*;
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, Diagnostics};
 use bevy::sprite::collide_aabb::collide;
 use grid::Grid;
 use rand::{seq::IteratorRandom, thread_rng, Rng};
@@ -11,6 +12,7 @@ const GRID_BOUND: Vec2 = const_vec2!([GRID_SIZE.0 as f32, GRID_SIZE.1 as f32]);
 fn main() {
     App::build()
         .add_default_plugins()
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_resource(ClearColor(BACK_COLOR))
         .add_resource(SimulationState::prepare(10, 10, 50, 10.0))
         .add_startup_system(setup.system())
@@ -20,6 +22,7 @@ fn main() {
         .add_system(turn_system.system())
         .add_system(life_display_system.system())
         .add_system(random_move_system.system())
+        .add_system(ui_update_system.system())
         .run();
 }
 
@@ -51,7 +54,7 @@ fn setup(
         .spawn(UiCameraComponents::default())
         .spawn(TextComponents {
             text: Text {
-                value: "TURN - 0".to_string(),
+                value: "TURN: 0, FPS: 0.0".to_string(),
                 font,
                 style: TextStyle {
                     color: Color::WHITE,
@@ -363,7 +366,6 @@ fn turn_system(
     mut simulation: ResMut<SimulationState>,
     sprites: Res<GameSprites>,
     mut creature_query: Query<(Entity, &mut Creature, &Transform)>,
-    mut simulation_ui_query: Query<(&SimulationUi, &mut Text)>,
     mut food_query: Query<(&Food, &Transform)>,
 ) {
     if let SimulationState::Running { daily_food_count, turn_count, turn_timer } = &mut *simulation {
@@ -415,9 +417,17 @@ fn turn_system(
                 })
                 .with(Food::new());
         }
+    }
+}
 
-        for (_ui, mut text) in &mut simulation_ui_query.iter() {
-            text.value = format!("TURN - {}", turn_count);
+fn ui_update_system(diagnostics: Res<Diagnostics>, simulation: Res<SimulationState>, mut ui_query: Query<(&mut Text, &SimulationUi)>) {
+    if let SimulationState::Running { turn_count, .. } = &*simulation {
+        for (mut text, _ui) in &mut ui_query.iter() {
+            if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+                if let Some(average) = fps.average() {
+                    text.value = format!("TURN: {}, FPS: {}", turn_count, average);
+                }
+            }
         }
     }
 }
