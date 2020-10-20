@@ -215,22 +215,22 @@ fn prepare_simulation(
         daily_food_count,
     } = &mut *simulation
     {
-        for i in 0..*creature_count {
+        for transform in calculate_random_objects(Creature::INIT_X * 2, Creature::INIT_Y * 2, *creature_count, std::iter::empty()) {
             commands
                 .spawn(SpriteComponents {
                     material: sprites.creature,
-                    transform: Transform::from_translation(Vec3::new(i as f32 * 60.0, 0.0, 1.0)),
+                    transform,
                     sprite: Sprite::new(Creature::INIT_SIZE),
                     ..Default::default()
                 })
                 .with(Creature::new());
         }
 
-        for i in 0..*food_count {
+        for transform in calculate_random_objects(Food::INIT_X * 2, Food::INIT_Y * 2, *food_count, std::iter::empty()) {
             commands
                 .spawn(SpriteComponents {
                     material: sprites.food,
-                    transform: Transform::from_translation(Vec3::new(i as f32 * 50.0, -100.0, 1.0)),
+                    transform,
                     sprite: Sprite::new(Food::INIT_SIZE),
                     ..Default::default()
                 })
