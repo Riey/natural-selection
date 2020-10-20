@@ -297,7 +297,6 @@ fn collision_system(
             if let Some(_collision) = collision {
                 // eat
                 if creature.try_eat_food(&mut food) {
-                    println!("yummy");
                     commands.despawn_recursive(food_entity);
                 }
             }
