@@ -1,9 +1,12 @@
+mod dna;
+
 use bevy::math::const_vec2;
 use bevy::prelude::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, Diagnostics};
 use bevy::sprite::collide_aabb::collide;
 use grid::Grid;
 use rand::{seq::IteratorRandom, thread_rng, Rng};
+use self::dna::DNA;
 
 const BACK_COLOR: Color = Color::BLACK;
 const GRID_SIZE: (usize, usize) = (800, 300);
@@ -144,9 +147,10 @@ impl SimulationState {
 }
 
 struct Creature {
-    life: usize,
+    life: f32,
     velocity: Vec2,
     move_timer: Timer,
+    dna: DNA,
 }
 
 impl Creature {
@@ -156,15 +160,16 @@ impl Creature {
 
     pub fn new() -> Self {
         Self {
-            life: 0,
+            life: 0.0,
             velocity: Vec2::new(0.0, 0.0),
             move_timer: Timer::from_seconds(1.0, true),
+            dna: DNA::generate(),
         }
     }
 
     pub fn try_eat_food(&mut self, food: &mut Food) -> bool {
         if food.try_ate() {
-            self.life += 1;
+            self.life += 2.0;
             true
         } else {
             false
@@ -176,15 +181,15 @@ impl Creature {
     }
 
     pub fn time_pass(&mut self) {
-        self.life = self.life.saturating_sub(1);
+        self.life -= self.dna.time_cost();
     }
 
-    pub const fn will_die(&self) -> bool {
-        self.life == 0
+    pub fn will_die(&self) -> bool {
+        self.life < self.dna.time_cost()
     }
 
-    pub fn velocity_mut(&mut self) -> &mut Vec2 {
-        &mut self.velocity
+    pub fn set_velocity(&mut self, velocity: Vec2) {
+        self.velocity = velocity * self.dna.move_speed();
     }
 
     pub fn move_timer(&mut self) -> &mut Timer {
@@ -192,8 +197,8 @@ impl Creature {
     }
 
     pub fn try_duplicate(&mut self) -> bool {
-        if self.life >= 2 {
-            self.life -= 1;
+        if self.life > 1.0 + self.dna.time_cost() {
+            self.life -= 1.0;
             true
         } else {
             false
@@ -446,8 +451,6 @@ fn life_display_system(
 }
 
 fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,)>) {
-    const MAX_SPEED: f32 = 150.0 / 2.0;
-
     let mut rng = thread_rng();
 
     for (mut creature,) in &mut creature_query.iter() {
@@ -457,9 +460,8 @@ fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,
             continue;
         }
 
-        let x = rng.gen_range(-MAX_SPEED, MAX_SPEED);
-        let y = rng.gen_range(-MAX_SPEED, MAX_SPEED);
-        *creature.velocity_mut().x_mut() = x;
-        *creature.velocity_mut().y_mut() = y;
+        let x = rng.gen_range(-1.0, 1.0);
+        let y = rng.gen_range(-1.0, 1.0);
+        creature.set_velocity(Vec2::new(x, y));
     }
 }
