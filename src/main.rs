@@ -178,6 +178,15 @@ impl Creature {
         }
     }
 
+    fn child(parent: &Self) -> Self {
+        Self {
+            life:0.0,
+            velocity: -parent.velocity,
+            move_timer: Timer::from_seconds(1.0, true),
+            dna: parent.dna.duplicate(),
+        }
+    }
+
     pub fn try_eat_food(&mut self, food: &mut Food) -> bool {
         if food.try_ate() {
             self.life += 2.0;
@@ -207,12 +216,12 @@ impl Creature {
         &mut self.move_timer
     }
 
-    pub fn try_duplicate(&mut self) -> bool {
+    pub fn try_duplicate(&mut self) -> Option<Self> {
         if self.life > 1.0 + self.dna.time_cost() {
             self.life -= 1.0;
-            true
+            Some(Self::child(self))
         } else {
-            false
+            None
         }
     }
 }
@@ -402,7 +411,7 @@ fn turn_system(
             if creature.will_die() {
                 commands.despawn(creature_entity);
             } else {
-                if creature.try_duplicate() {
+                if let Some(child) = creature.try_duplicate() {
                     commands
                         .spawn(SpriteComponents {
                             material: sprites.creature,
@@ -410,7 +419,7 @@ fn turn_system(
                             transform: transform.clone(),
                             ..Default::default()
                         })
-                        .with(Creature::new());
+                        .with(child);
                 }
             }
 

@@ -21,4 +21,11 @@ impl DNA {
     pub fn time_cost(&self) -> f32 {
         1.0 + self.move_speed().pow(1.2) / 80.0
     }
+
+    pub fn duplicate(&self) -> Self {
+        // TODO: mutation
+        Self {
+            move_speed: self.move_speed,
+        }
+    }
 }
