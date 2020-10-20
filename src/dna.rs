@@ -1,5 +1,5 @@
 use num_traits::Pow;
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
 pub struct DNA {
     move_speed: f32,

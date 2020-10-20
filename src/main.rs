@@ -1,12 +1,14 @@
 mod dna;
 
+use self::dna::DNA;
+
+use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
 use bevy::math::const_vec2;
 use bevy::prelude::*;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, Diagnostics};
 use bevy::sprite::collide_aabb::collide;
 use grid::Grid;
-use rand::{seq::IteratorRandom, thread_rng, Rng};
-use self::dna::DNA;
+use rand::{seq::IteratorRandom, thread_rng};
+use rand_distr::{Distribution, UnitCircle};
 
 const BACK_COLOR: Color = Color::BLACK;
 const GRID_SIZE: (usize, usize) = (800, 300);
@@ -62,7 +64,7 @@ fn setup(
                 style: TextStyle {
                     color: Color::WHITE,
                     font_size: 30.0,
-                }
+                },
             },
             style: Style {
                 align_self: AlignSelf::FlexEnd,
@@ -132,7 +134,12 @@ enum SimulationState {
 }
 
 impl SimulationState {
-    pub fn prepare(creature_count: usize, food_count: usize, daily_food_count: usize, turn_interval: f32) -> Self {
+    pub fn prepare(
+        creature_count: usize,
+        food_count: usize,
+        daily_food_count: usize,
+        turn_interval: f32,
+    ) -> Self {
         SimulationState::Prepare {
             creature_count,
             food_count,
@@ -142,7 +149,11 @@ impl SimulationState {
     }
 
     pub fn running(daily_food_count: usize, turn_interval: f32) -> Self {
-        SimulationState::Running { daily_food_count, turn_timer: Timer::from_seconds(turn_interval, true), turn_count: 0 }
+        SimulationState::Running {
+            daily_food_count,
+            turn_timer: Timer::from_seconds(turn_interval, true),
+            turn_count: 0,
+        }
     }
 }
 
@@ -372,7 +383,12 @@ fn turn_system(
     mut creature_query: Query<(Entity, &mut Creature, &Transform)>,
     mut food_query: Query<(&Food, &Transform)>,
 ) {
-    if let SimulationState::Running { daily_food_count, turn_count, turn_timer } = &mut *simulation {
+    if let SimulationState::Running {
+        daily_food_count,
+        turn_count,
+        turn_timer,
+    } = &mut *simulation
+    {
         turn_timer.tick(time.delta_seconds);
 
         if !turn_timer.finished {
@@ -424,7 +440,11 @@ fn turn_system(
     }
 }
 
-fn ui_update_system(diagnostics: Res<Diagnostics>, simulation: Res<SimulationState>, mut ui_query: Query<(&mut Text, &SimulationUi)>) {
+fn ui_update_system(
+    diagnostics: Res<Diagnostics>,
+    simulation: Res<SimulationState>,
+    mut ui_query: Query<(&mut Text, &SimulationUi)>,
+) {
     if let SimulationState::Running { turn_count, .. } = &*simulation {
         for (mut text, _ui) in &mut ui_query.iter() {
             if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
@@ -459,8 +479,7 @@ fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,
             continue;
         }
 
-        let x = rng.gen_range(-1.0, 1.0);
-        let y = rng.gen_range(-1.0, 1.0);
+        let [x, y] = UnitCircle.sample(&mut rng);
         creature.set_velocity(Vec2::new(x, y));
     }
 }
