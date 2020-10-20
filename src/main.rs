@@ -51,7 +51,7 @@ fn setup(
 
     let wall_material = materials.add(Color::WHITE.into());
     let thickness = 10.0;
-    let bound = GRID_BOUND + Vec2::splat(thickness);
+    let bound = GRID_BOUND + Vec2::splat(thickness * 2.0);
 
     commands
         .spawn(SpriteComponents {
