@@ -231,11 +231,11 @@ fn calculate_random_objects(
 ) -> impl Iterator<Item = Transform> {
     let mut rng = thread_rng();
 
-    let mut grid = Grid::new(GRID_SIZE.0 / object_width, GRID_SIZE.1 / object_height);
+    let mut grid = Grid::new(GRID_SIZE.1 / object_height, GRID_SIZE.0 / object_width);
 
     for translation in translations {
         let x = (((GRID_SIZE.0 / 2) as f32 + translation.x()).max(0.0) as usize) / object_width;
-        let x = x.min(grid.cols() - 1);
+        let x = x.min(grid.rows() - 1);
         let y = (((GRID_SIZE.1 / 2) as f32 + translation.y()).max(0.0) as usize) / object_height;
         let y = y.min(grid.cols() - 1);
 
@@ -251,8 +251,8 @@ fn calculate_random_objects(
             let y = idx / grid.cols();
             let x = idx - y * grid.cols();
             Transform::from_translation(Vec3::new(
-                (x * object_width) as f32,
-                (y * object_height) as f32,
+                (x * object_width) as f32 - (GRID_SIZE.0 / 2) as f32,
+                (y * object_height) as f32 - (GRID_SIZE.1 / 2) as f32,
                 0.0,
             ))
         })
