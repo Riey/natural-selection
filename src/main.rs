@@ -6,12 +6,13 @@ use rand::{seq::IteratorRandom, thread_rng, Rng};
 
 const BACK_COLOR: Color = Color::BLACK;
 const GRID_SIZE: (usize, usize) = (800, 300);
+const GRID_BOUND: Vec2 = const_vec2!([GRID_SIZE.0 as f32, GRID_SIZE.1 as f32]);
 
 fn main() {
     App::build()
         .add_default_plugins()
         .add_resource(ClearColor(BACK_COLOR))
-        .add_resource(SimulationState::prepare(10, 10, 5))
+        .add_resource(SimulationState::prepare(10, 10, 50))
         .add_resource(TurnTimer(Timer::from_seconds(10.0, true)))
         .add_resource(TurnCount(0))
         .add_startup_system(setup.system())
@@ -47,7 +48,43 @@ fn setup(
         })
         .spawn(Camera2dComponents::default())
         .spawn(UiCameraComponents::default());
+
+    let wall_material = materials.add(Color::WHITE.into());
+    let thickness = 10.0;
+    let bound = GRID_BOUND + Vec2::splat(thickness);
+
+    commands
+        .spawn(SpriteComponents {
+            material: wall_material,
+            transform: Transform::from_translation(Vec3::new(-bound.x() / 2.0, 0.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(thickness, bound.y() + thickness)),
+            ..Default::default()
+        })
+        .with(Wall)
+        .spawn(SpriteComponents {
+            material: wall_material,
+            transform: Transform::from_translation(Vec3::new(bound.x() / 2.0, 0.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(thickness, bound.y() + thickness)),
+            ..Default::default()
+        })
+        .with(Wall)
+        .spawn(SpriteComponents {
+            material: wall_material,
+            transform: Transform::from_translation(Vec3::new(0.0, -bound.y() / 2.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(bound.x() + thickness, thickness)),
+            ..Default::default()
+        })
+        .with(Wall)
+        .spawn(SpriteComponents {
+            material: wall_material,
+            transform: Transform::from_translation(Vec3::new(0.0, bound.y() / 2.0, 0.0)),
+            sprite: Sprite::new(Vec2::new(bound.x() + thickness, thickness)),
+            ..Default::default()
+        })
+        .with(Wall);
 }
+
+struct Wall;
 
 struct GameSprites {
     creature: Handle<ColorMaterial>,
@@ -77,13 +114,6 @@ impl SimulationState {
 
     pub fn running(daily_food_count: usize) -> Self {
         SimulationState::Running { daily_food_count }
-    }
-
-    pub fn is_running(&self) -> bool {
-        match self {
-            SimulationState::Running { .. } => true,
-            _ => false,
-        }
     }
 }
 
