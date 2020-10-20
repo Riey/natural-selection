@@ -12,9 +12,7 @@ fn main() {
     App::build()
         .add_default_plugins()
         .add_resource(ClearColor(BACK_COLOR))
-        .add_resource(SimulationState::prepare(10, 10, 50))
-        .add_resource(TurnTimer(Timer::from_seconds(10.0, true)))
-        .add_resource(TurnCount(0))
+        .add_resource(SimulationState::prepare(10, 10, 50, 10.0))
         .add_startup_system(setup.system())
         .add_system(prepare_simulation.system())
         .add_system(collision_system.system())
@@ -39,6 +37,9 @@ fn setup(
     let food_texture = asset_server
         .load("assets/food.png")
         .expect("Load food texture");
+    let font = asset_server
+        .load("assets/Hack-Regular.ttf")
+        .expect("Load font");
 
     commands
         .insert_resource(GameSprites {
@@ -47,7 +48,23 @@ fn setup(
             food: materials.add(food_texture.into()),
         })
         .spawn(Camera2dComponents::default())
-        .spawn(UiCameraComponents::default());
+        .spawn(UiCameraComponents::default())
+        .spawn(TextComponents {
+            text: Text {
+                value: "TURN - 0".to_string(),
+                font,
+                style: TextStyle {
+                    color: Color::WHITE,
+                    font_size: 30.0,
+                }
+            },
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .with(SimulationUi);
 
     let wall_material = materials.add(Color::WHITE.into());
     let thickness = 10.0;
@@ -92,33 +109,36 @@ struct GameSprites {
     food: Handle<ColorMaterial>,
 }
 
+struct SimulationUi;
+
 enum SimulationState {
     Prepare {
         creature_count: usize,
         food_count: usize,
         daily_food_count: usize,
+        turn_interval: f32,
     },
     Running {
         daily_food_count: usize,
+        turn_timer: Timer,
+        turn_count: usize,
     },
 }
 
 impl SimulationState {
-    pub fn prepare(creature_count: usize, food_count: usize, daily_food_count: usize) -> Self {
+    pub fn prepare(creature_count: usize, food_count: usize, daily_food_count: usize, turn_interval: f32) -> Self {
         SimulationState::Prepare {
             creature_count,
             food_count,
             daily_food_count,
+            turn_interval,
         }
     }
 
-    pub fn running(daily_food_count: usize) -> Self {
-        SimulationState::Running { daily_food_count }
+    pub fn running(daily_food_count: usize, turn_interval: f32) -> Self {
+        SimulationState::Running { daily_food_count, turn_timer: Timer::from_seconds(turn_interval, true), turn_count: 0 }
     }
 }
-
-struct TurnTimer(Timer);
-struct TurnCount(usize);
 
 struct Creature {
     life: usize,
@@ -204,13 +224,13 @@ impl Food {
 fn prepare_simulation(
     mut commands: Commands,
     mut simulation: ResMut<SimulationState>,
-    mut turn_count: ResMut<TurnCount>,
     sprites: Res<GameSprites>,
 ) {
     if let SimulationState::Prepare {
         creature_count,
         food_count,
         daily_food_count,
+        turn_interval,
     } = &mut *simulation
     {
         for transform in calculate_random_objects(
@@ -245,8 +265,7 @@ fn prepare_simulation(
                 .with(Food::new());
         }
 
-        *simulation = SimulationState::running(*daily_food_count);
-        turn_count.0 = 0;
+        *simulation = SimulationState::running(*daily_food_count, *turn_interval);
     }
 }
 
@@ -341,21 +360,20 @@ fn calculate_random_objects(
 fn turn_system(
     mut commands: Commands,
     time: Res<Time>,
-    simulation: Res<SimulationState>,
+    mut simulation: ResMut<SimulationState>,
     sprites: Res<GameSprites>,
-    mut turn_timer: ResMut<TurnTimer>,
-    mut turn_count: ResMut<TurnCount>,
     mut creature_query: Query<(Entity, &mut Creature, &Transform)>,
+    mut simulation_ui_query: Query<(&SimulationUi, &mut Text)>,
     mut food_query: Query<(&Food, &Transform)>,
 ) {
-    if let SimulationState::Running { daily_food_count } = &*simulation {
-        turn_timer.0.tick(time.delta_seconds);
+    if let SimulationState::Running { daily_food_count, turn_count, turn_timer } = &mut *simulation {
+        turn_timer.tick(time.delta_seconds);
 
-        if !turn_timer.0.finished {
+        if !turn_timer.finished {
             return;
         }
 
-        turn_count.0 += 1;
+        *turn_count += 1;
 
         // Process creature
         for (creature_entity, mut creature, transform) in &mut creature_query.iter() {
@@ -378,7 +396,6 @@ fn turn_system(
         }
 
         // Spawn foods
-
         let mut food_iter = food_query.iter();
 
         for transform in calculate_random_objects(
@@ -397,6 +414,10 @@ fn turn_system(
                     ..Default::default()
                 })
                 .with(Food::new());
+        }
+
+        for (_ui, mut text) in &mut simulation_ui_query.iter() {
+            text.value = format!("TURN - {}", turn_count);
         }
     }
 }
