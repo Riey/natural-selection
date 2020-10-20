@@ -188,9 +188,7 @@ impl Food {
     pub const INIT_SIZE: Vec2 = const_vec2!([Self::INIT_X as f32, Self::INIT_Y as f32]);
 
     pub fn new() -> Self {
-        Self {
-            is_ate: false,
-        }
+        Self { is_ate: false }
     }
 
     pub fn try_ate(&mut self) -> bool {
@@ -215,7 +213,12 @@ fn prepare_simulation(
         daily_food_count,
     } = &mut *simulation
     {
-        for transform in calculate_random_objects(Creature::INIT_X * 2, Creature::INIT_Y * 2, *creature_count, std::iter::empty()) {
+        for transform in calculate_random_objects(
+            Creature::INIT_X * 2,
+            Creature::INIT_Y * 2,
+            *creature_count,
+            std::iter::empty(),
+        ) {
             commands
                 .spawn(SpriteComponents {
                     material: sprites.creature,
@@ -226,7 +229,12 @@ fn prepare_simulation(
                 .with(Creature::new());
         }
 
-        for transform in calculate_random_objects(Food::INIT_X * 2, Food::INIT_Y * 2, *food_count, std::iter::empty()) {
+        for transform in calculate_random_objects(
+            Food::INIT_X * 2,
+            Food::INIT_Y * 2,
+            *food_count,
+            std::iter::empty(),
+        ) {
             commands
                 .spawn(SpriteComponents {
                     material: sprites.food,
@@ -311,6 +319,9 @@ fn calculate_random_objects(
         grid[y][x] = true;
     }
 
+    let min_x = -(((GRID_SIZE.0 / 2) - object_width) as f32);
+    let min_y = -(((GRID_SIZE.1 / 2) - object_height) as f32);
+
     grid.iter_mut()
         .enumerate()
         .filter_map(|(i, v)| if *v { None } else { Some(i) })
@@ -320,8 +331,8 @@ fn calculate_random_objects(
             let y = idx / grid.cols();
             let x = idx - y * grid.cols();
             Transform::from_translation(Vec3::new(
-                (x * object_width) as f32 - (GRID_SIZE.0 / 2) as f32,
-                (y * object_height) as f32 - (GRID_SIZE.1 / 2) as f32,
+                ((x * object_width) as f32 - (GRID_SIZE.0 / 2) as f32).max(min_x),
+                ((y * object_height) as f32 - (GRID_SIZE.1 / 2) as f32).max(min_y),
                 0.0,
             ))
         })
