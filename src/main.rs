@@ -17,7 +17,7 @@ fn main() {
         .add_resource(TurnCount(0))
         .add_startup_system(setup.system())
         .add_system(prepare_simulation.system())
-        .add_system(eat_system.system())
+        .add_system(collision_system.system())
         .add_system(movement_system.system())
         .add_system(turn_system.system())
         .add_system(life_display_system.system())
@@ -148,6 +148,10 @@ impl Creature {
         }
     }
 
+    pub fn crash_with_wall(&mut self) {
+        self.velocity = -self.velocity;
+    }
+
     pub fn time_pass(&mut self) {
         self.life = self.life.saturating_sub(1);
     }
@@ -238,10 +242,11 @@ fn prepare_simulation(
     }
 }
 
-fn eat_system(
+fn collision_system(
     mut commands: Commands,
     mut creature_query: Query<(&mut Creature, &Transform, &Sprite)>,
     mut food_query: Query<(Entity, &mut Food, &Transform, &Sprite)>,
+    mut wall_query: Query<(&Wall, &Transform, &Sprite)>,
 ) {
     for (mut creature, creature_transform, sprite) in &mut creature_query.iter() {
         let creature_size = sprite.size;
@@ -255,10 +260,25 @@ fn eat_system(
             );
 
             if let Some(_collision) = collision {
+                // eat
                 if creature.try_eat_food(&mut food) {
                     println!("yummy");
-                    commands.despawn(food_entity);
+                    commands.despawn_recursive(food_entity);
                 }
+            }
+        }
+
+        for (_wall, wall_transform, sprite) in &mut wall_query.iter() {
+            let collision = collide(
+                creature_transform.translation(),
+                creature_size,
+                wall_transform.translation(),
+                sprite.size,
+            );
+
+            if let Some(_collision) = collision {
+                // crash
+                creature.crash_with_wall();
             }
         }
     }
