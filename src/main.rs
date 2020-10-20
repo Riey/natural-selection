@@ -139,8 +139,13 @@ impl Creature {
         }
     }
 
-    pub fn eat_food(&mut self) {
-        self.life += 1;
+    pub fn try_eat_food(&mut self, food: &mut Food) -> bool {
+        if food.try_ate() {
+            self.life += 1;
+            true
+        } else {
+            false
+        }
     }
 
     pub fn time_pass(&mut self) {
@@ -169,7 +174,9 @@ impl Creature {
     }
 }
 
-struct Food {}
+struct Food {
+    is_ate: bool,
+}
 
 impl Food {
     pub const INIT_X: usize = 20;
@@ -177,7 +184,18 @@ impl Food {
     pub const INIT_SIZE: Vec2 = const_vec2!([Self::INIT_X as f32, Self::INIT_Y as f32]);
 
     pub fn new() -> Self {
-        Self {}
+        Self {
+            is_ate: false,
+        }
+    }
+
+    pub fn try_ate(&mut self) -> bool {
+        if !self.is_ate {
+            self.is_ate = true;
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -223,12 +241,12 @@ fn prepare_simulation(
 fn eat_system(
     mut commands: Commands,
     mut creature_query: Query<(&mut Creature, &Transform, &Sprite)>,
-    mut food_query: Query<(Entity, &Food, &Transform, &Sprite)>,
+    mut food_query: Query<(Entity, &mut Food, &Transform, &Sprite)>,
 ) {
     for (mut creature, creature_transform, sprite) in &mut creature_query.iter() {
         let creature_size = sprite.size;
 
-        for (food_entity, _food, food_transform, sprite) in &mut food_query.iter() {
+        for (food_entity, mut food, food_transform, sprite) in &mut food_query.iter() {
             let collision = collide(
                 creature_transform.translation(),
                 creature_size,
@@ -237,9 +255,10 @@ fn eat_system(
             );
 
             if let Some(_collision) = collision {
-                creature.eat_food();
-                println!("yummy");
-                commands.despawn(food_entity);
+                if creature.try_eat_food(&mut food) {
+                    println!("yummy");
+                    commands.despawn(food_entity);
+                }
             }
         }
     }
@@ -370,9 +389,9 @@ fn random_move_system(time: Res<Time>, mut creature_query: Query<(&mut Creature,
     let mut rng = thread_rng();
 
     for (mut creature,) in &mut creature_query.iter() {
-        creature.move_timer.tick(time.delta_seconds);
+        creature.move_timer().tick(time.delta_seconds);
 
-        if !creature.move_timer.finished {
+        if !creature.move_timer().finished {
             continue;
         }
 
