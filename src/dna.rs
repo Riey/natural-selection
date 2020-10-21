@@ -1,8 +1,13 @@
+mod bf;
+
+use self::bf::{run as run_bf, Instruction};
 use num_traits::Pow;
 use rand::{thread_rng, Rng};
+use rand::distributions::Standard;
+use bevy::prelude::Vec2;
 
 pub struct DNA {
-    move_speed: f32,
+    code: Vec<Instruction>,
 }
 
 impl DNA {
@@ -10,22 +15,23 @@ impl DNA {
         let mut rng = thread_rng();
 
         Self {
-            move_speed: rng.gen_range(30.0, 75.0),
+            code: rng.sample_iter::<Standard, Instruction>().collect(),
         }
     }
 
-    pub fn move_speed(&self) -> f32 {
-        self.move_speed
+    pub fn move_behaivor(&self) -> Vec2 {
+        let output = run_bf(&self.code);
     }
 
     pub fn time_cost(&self) -> f32 {
-        1.0 + self.move_speed().pow(1.2) / 80.0
+        // TODO: relate this value with code size
+        0.0
     }
 
     pub fn duplicate(&self) -> Self {
         // TODO: mutation
         Self {
-            move_speed: self.move_speed,
+            code: self.code.clone(),
         }
     }
 }
