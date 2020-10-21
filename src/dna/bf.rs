@@ -62,7 +62,7 @@ struct Interpreter<'a> {
 impl<'a> Interpreter<'a> {
     pub fn new(code: &'a [Instruction], input: &'a [BaseType]) -> Self {
         Self {
-            dead_count: 20000,
+            dead_count: 1000000,
             pc: 0,
             code,
             tape: Tape::new(8196),
