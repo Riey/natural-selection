@@ -57,7 +57,7 @@ impl Creature {
     }
 
     pub fn will_die(&self) -> bool {
-        !self.activated && self.life < self.dna.time_cost()
+        !self.activated || self.life < self.dna.time_cost()
     }
 
     pub fn has_moved(&mut self, distance: f32) {

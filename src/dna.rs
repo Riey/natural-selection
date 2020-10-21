@@ -31,13 +31,13 @@ impl DNA {
 
     pub fn time_cost(&self) -> f32 {
         // TODO: relate this value with code size
-        0.0
+        1.0
     }
 
     pub fn mutate(&mut self) {
         let mut rng = thread_rng();
 
-        for _ in 0..rng.gen_range(0, self.code.len()) {
+        for _ in 0..rng.gen_range(0, 3) {
             let idx = rng.gen_range(0, self.code.len());
             self.code[idx] = rng.gen();
         }

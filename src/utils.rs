@@ -32,9 +32,9 @@ pub fn is_out_of_box(translation: Vec3) -> bool {
         && translation.y() > min_y
         && translation.y() < max_y
     {
-        true
-    } else {
         false
+    } else {
+        true
     }
 }
 
