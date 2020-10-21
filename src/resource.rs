@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct GameSprites {
     creature: Handle<ColorMaterial>,
     creature_filled: Handle<ColorMaterial>,
@@ -22,15 +22,15 @@ impl GameSprites {
     }
 
     pub fn creature(&self) -> Handle<ColorMaterial> {
-        self.creature
+        self.creature.clone_weak()
     }
 
     pub fn creature_filled(&self) -> Handle<ColorMaterial> {
-        self.creature_filled
+        self.creature_filled.clone_weak()
     }
 
     pub fn food(&self) -> Handle<ColorMaterial> {
-        self.food
+        self.food.clone_weak()
     }
 }
 

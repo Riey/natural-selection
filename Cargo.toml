@@ -15,7 +15,7 @@ memchr = "2.3.3"
 num-derive = "0.3.2"
 
 [dependencies.bevy]
-version = "0.2.1"
+git = "https://github.com/bevyengine/bevy"
 default-features = false
 features = [
     "bevy_wgpu",

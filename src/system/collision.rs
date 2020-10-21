@@ -13,9 +13,9 @@ pub fn collision_system(
 
         for (food_entity, mut food, food_transform, sprite) in &mut food_query.iter() {
             let collision = collide(
-                creature_transform.translation(),
+                creature_transform.translation,
                 creature_size,
-                food_transform.translation(),
+                food_transform.translation,
                 sprite.size,
             );
 

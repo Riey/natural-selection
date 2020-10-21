@@ -29,7 +29,7 @@ pub fn turn_system(
 
         // Process creature
         for (creature_entity, mut creature, transform) in &mut creature_query.iter() {
-            if creature.will_die() || is_out_of_box(transform.translation()) {
+            if creature.will_die() || is_out_of_box(transform.translation) {
                 commands.despawn(creature_entity);
             } else {
                 if let Some(child) = creature.try_duplicate() {
@@ -56,7 +56,7 @@ pub fn turn_system(
             *daily_creature_count,
             creature_iter
                 .iter()
-                .map(|(_, _, transform)| transform.translation()),
+                .map(|(_, _, transform)| transform.translation),
         ) {
             commands
                 .spawn(SpriteComponents {
@@ -78,7 +78,7 @@ pub fn turn_system(
             food_iter
                 .iter()
                 .take(*daily_food_count * 2)
-                .map(|(_food, transform)| transform.translation()),
+                .map(|(_food, transform)| transform.translation),
         ) {
             commands
                 .spawn(SpriteComponents {

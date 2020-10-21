@@ -10,20 +10,16 @@ pub fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let creature_texture = asset_server
-        .load("assets/creature.png")
-        .expect("Load creature texture");
+        .load("creature.png");
     let creature_filled_texture = asset_server
-        .load("assets/creature_filled.png")
-        .expect("Load creature filled texture");
+        .load("creature_filled.png");
     let food_texture = asset_server
-        .load("assets/food.png")
-        .expect("Load food texture");
+        .load("food.png");
     let font = asset_server
-        .load("assets/Hack-Regular.ttf")
-        .expect("Load font");
+        .load("Hack-Regular.ttf");
 
     let mut camera = Camera2dComponents::default();
-    camera.transform.set_scale(SCALE_F);
+    camera.transform.scale = Vec3::splat(SCALE_F);
     camera.orthographic_projection.far *= SCALE_F;
 
     commands
@@ -58,21 +54,21 @@ pub fn setup(
 
     commands
         .spawn(SpriteComponents {
-            material: wall_material,
+            material: wall_material.clone_weak(),
             transform: Transform::from_translation(Vec3::new(-bound.x() / 2.0, 0.0, 0.0)),
             sprite: Sprite::new(Vec2::new(thickness, bound.y() + thickness)),
             ..Default::default()
         })
         .with(Wall)
         .spawn(SpriteComponents {
-            material: wall_material,
+            material: wall_material.clone_weak(),
             transform: Transform::from_translation(Vec3::new(bound.x() / 2.0, 0.0, 0.0)),
             sprite: Sprite::new(Vec2::new(thickness, bound.y() + thickness)),
             ..Default::default()
         })
         .with(Wall)
         .spawn(SpriteComponents {
-            material: wall_material,
+            material: wall_material.clone_weak(),
             transform: Transform::from_translation(Vec3::new(0.0, -bound.y() / 2.0, 0.0)),
             sprite: Sprite::new(Vec2::new(bound.x() + thickness, thickness)),
             ..Default::default()

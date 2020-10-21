@@ -9,10 +9,10 @@ pub fn movement_system(
     let delta_seconds = f32::min(0.2, time.delta_seconds);
 
     for (mut creature, mut transform) in &mut creature_query.iter() {
-        let translation = creature.velocity() * delta_seconds;
-        transform.translate(translation.extend(0.0));
+        let movement = creature.velocity() * delta_seconds;
+         transform.translation += movement.extend(0.0);
 
-        let distance = translation.length();
+        let distance = movement.length();
         creature.has_moved(distance);
     }
 }
