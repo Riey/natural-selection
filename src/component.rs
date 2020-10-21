@@ -33,7 +33,7 @@ impl Creature {
             activated: false,
             velocity: Vec2::new(0.0, 0.0),
             tick_timer: Timer::new(Duration::from_millis(100), true),
-            dna: DNA::generate(),
+            dna: DNA::generate_prechecked(),
         }
     }
 
