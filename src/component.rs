@@ -12,6 +12,8 @@ pub struct Wall;
 
 pub struct Creature {
     life: f32,
+    old: usize,
+    generation: usize,
     activated: bool,
     velocity: Vec2,
     tick_timer: Timer,
@@ -26,6 +28,8 @@ impl Creature {
     pub fn new() -> Self {
         Self {
             life: 0.0,
+            old: 0,
+            generation: 0,
             activated: false,
             velocity: Vec2::new(0.0, 0.0),
             tick_timer: Timer::new(Duration::from_millis(100), true),
@@ -36,6 +40,8 @@ impl Creature {
     fn child(parent: &Self) -> Self {
         Self {
             life: 0.0,
+            old: 0,
+            generation: parent.generation + 1,
             activated: false,
             velocity: -parent.velocity,
             tick_timer: parent.tick_timer.clone(),
@@ -53,6 +59,7 @@ impl Creature {
     }
 
     pub fn time_pass(&mut self) {
+        self.old += 1;
         self.life -= self.dna.time_cost();
     }
 
@@ -69,6 +76,14 @@ impl Creature {
 
     pub fn velocity(&self) -> Vec2 {
         self.velocity
+    }
+
+    pub fn generation(&self) -> usize {
+        self.generation
+    }
+
+    pub fn old(&self) -> usize {
+        self.old
     }
 
     pub fn tick(&mut self, translation: Vec2, delta: f32) -> Result<(), ()> {

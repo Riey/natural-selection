@@ -77,6 +77,7 @@ pub fn turn_system(
             *daily_food_count,
             food_iter
                 .iter()
+                .take(*daily_food_count * 2)
                 .map(|(_food, transform)| transform.translation()),
         ) {
             commands

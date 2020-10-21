@@ -16,7 +16,7 @@ impl DNA {
         let rng = thread_rng();
 
         Self {
-            code: rng.sample_iter(Standard).take(100).collect(),
+            code: rng.sample_iter(Standard).take(1000).collect(),
         }
     }
 
@@ -31,7 +31,7 @@ impl DNA {
 
     pub fn time_cost(&self) -> f32 {
         // TODO: relate this value with code size
-        1.0
+        0.5
     }
 
     pub fn mutate(&mut self) {
