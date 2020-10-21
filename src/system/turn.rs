@@ -1,6 +1,6 @@
 use crate::component::{Creature, Food};
 use crate::resource::{GameSprites, SimulationState};
-use crate::utils::calculate_random_objects;
+use crate::utils::{calculate_random_objects, is_out_of_box};
 
 use bevy::prelude::*;
 
@@ -13,6 +13,7 @@ pub fn turn_system(
     mut food_query: Query<(&Food, &Transform)>,
 ) {
     if let SimulationState::Running {
+        daily_creature_count,
         daily_food_count,
         turn_count,
         turn_timer,
@@ -28,7 +29,7 @@ pub fn turn_system(
 
         // Process creature
         for (creature_entity, mut creature, transform) in &mut creature_query.iter() {
-            if creature.will_die() {
+            if creature.will_die() || is_out_of_box(transform.translation()) {
                 commands.despawn(creature_entity);
             } else {
                 if let Some(child) = creature.try_duplicate() {
@@ -44,6 +45,27 @@ pub fn turn_system(
             }
 
             creature.time_pass();
+        }
+
+        // Spawn creatures
+        let mut creature_iter = creature_query.iter();
+
+        for transform in calculate_random_objects(
+            Creature::INIT_X,
+            Creature::INIT_Y,
+            *daily_creature_count,
+            creature_iter
+                .iter()
+                .map(|(_, _, transform)| transform.translation()),
+        ) {
+            commands
+                .spawn(SpriteComponents {
+                    material: sprites.creature(),
+                    sprite: Sprite::new(Creature::INIT_SIZE),
+                    transform,
+                    ..Default::default()
+                })
+                .with(Creature::new());
         }
 
         // Spawn foods

@@ -1,5 +1,5 @@
 use crate::component::{SimulationUi, Wall};
-use crate::constants::GRID_BOUND;
+use crate::constants::{GRID_BOUND, SCALE_F};
 use crate::resource::GameSprites;
 
 use bevy::prelude::*;
@@ -22,6 +22,10 @@ pub fn setup(
         .load("assets/Hack-Regular.ttf")
         .expect("Load font");
 
+    let mut camera = Camera2dComponents::default();
+    camera.transform.set_scale(SCALE_F);
+    camera.orthographic_projection.far *= SCALE_F;
+
     commands
         .insert_resource(GameSprites::new(
             &mut materials,
@@ -29,7 +33,7 @@ pub fn setup(
             creature_filled_texture,
             food_texture,
         ))
-        .spawn(Camera2dComponents::default())
+        .spawn(camera)
         .spawn(UiCameraComponents::default())
         .spawn(TextComponents {
             text: Text {

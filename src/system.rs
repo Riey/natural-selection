@@ -1,9 +1,9 @@
 mod collision;
 mod life_display;
 mod movement;
-mod random_move;
 mod setup;
 mod simulation;
+mod tick;
 mod turn;
 mod ui_update;
 
@@ -14,8 +14,8 @@ use bevy::prelude::{ClearColor, IntoQuerySystem, Plugin};
 
 use self::{
     collision::collision_system, life_display::life_display_system, movement::movement_system,
-    random_move::random_move_system, setup::setup, simulation::prepare_simulation_system,
-    turn::turn_system, ui_update::ui_update_system,
+    setup::setup, simulation::prepare_simulation_system, tick::tick_system, turn::turn_system,
+    ui_update::ui_update_system,
 };
 use bevy::app::AppBuilder;
 
@@ -24,16 +24,10 @@ pub struct NaturalSelectionPlugin {
 }
 
 impl NaturalSelectionPlugin {
-    pub fn new(
-        creature_count: usize,
-        food_count: usize,
-        daily_food_count: usize,
-        turn_interval: f32,
-    ) -> Self {
+    pub fn new(daily_creature_count: usize, daily_food_count: usize, turn_interval: f32) -> Self {
         Self {
             init_simulation_state: SimulationState::prepare(
-                creature_count,
-                food_count,
+                daily_creature_count,
                 daily_food_count,
                 turn_interval,
             ),
@@ -50,9 +44,9 @@ impl Plugin for NaturalSelectionPlugin {
             .add_system(prepare_simulation_system.system())
             .add_system(collision_system.system())
             .add_system(movement_system.system())
+            .add_system(tick_system.system())
             .add_system(turn_system.system())
             .add_system(life_display_system.system())
-            .add_system(random_move_system.system())
             .add_system(ui_update_system.system());
     }
 }

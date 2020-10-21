@@ -1,7 +1,10 @@
-use bevy::math::{const_vec2, Vec2};
-
 use crate::dna::DNA;
-use bevy::core::Timer;
+use crate::utils::calculate_move_cost;
+
+use bevy::math::{const_vec2, Vec2};
+use bevy::prelude::Timer;
+
+use std::time::Duration;
 
 pub struct SimulationUi;
 
@@ -9,8 +12,9 @@ pub struct Wall;
 
 pub struct Creature {
     life: f32,
+    activated: bool,
     velocity: Vec2,
-    move_timer: Timer,
+    tick_timer: Timer,
     dna: DNA,
 }
 
@@ -22,8 +26,9 @@ impl Creature {
     pub fn new() -> Self {
         Self {
             life: 0.0,
+            activated: false,
             velocity: Vec2::new(0.0, 0.0),
-            move_timer: Timer::from_seconds(1.0, true),
+            tick_timer: Timer::new(Duration::from_millis(100), true),
             dna: DNA::generate(),
         }
     }
@@ -31,8 +36,9 @@ impl Creature {
     fn child(parent: &Self) -> Self {
         Self {
             life: 0.0,
+            activated: false,
             velocity: -parent.velocity,
-            move_timer: Timer::from_seconds(1.0, true),
+            tick_timer: parent.tick_timer.clone(),
             dna: parent.dna.duplicate(),
         }
     }
@@ -46,28 +52,33 @@ impl Creature {
         }
     }
 
-    pub fn crash_with_wall(&mut self) {
-        self.velocity = -self.velocity;
-    }
-
     pub fn time_pass(&mut self) {
         self.life -= self.dna.time_cost();
     }
 
     pub fn will_die(&self) -> bool {
-        self.life < self.dna.time_cost()
+        !self.activated && self.life < self.dna.time_cost()
+    }
+
+    pub fn has_moved(&mut self, distance: f32) {
+        if distance >= 0.0 {
+            self.activated = true;
+        }
+        self.life -= calculate_move_cost(distance);
     }
 
     pub fn velocity(&self) -> Vec2 {
         self.velocity
     }
 
-    pub fn set_velocity(&mut self, velocity: Vec2) {
-        self.velocity = velocity * self.dna.move_speed();
-    }
+    pub fn tick(&mut self, translation: Vec2, delta: f32) -> Result<(), ()> {
+        self.tick_timer.tick(delta);
 
-    pub fn move_timer(&mut self) -> &mut Timer {
-        &mut self.move_timer
+        if self.tick_timer.finished {
+            self.velocity = self.dna.move_behaivor(translation)?;
+        }
+
+        Ok(())
     }
 
     pub fn try_duplicate(&mut self) -> Option<Self> {

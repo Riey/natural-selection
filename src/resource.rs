@@ -37,12 +37,12 @@ impl GameSprites {
 #[derive(Clone)]
 pub enum SimulationState {
     Prepare {
-        creature_count: usize,
-        food_count: usize,
+        daily_creature_count: usize,
         daily_food_count: usize,
         turn_interval: f32,
     },
     Running {
+        daily_creature_count: usize,
         daily_food_count: usize,
         turn_timer: Timer,
         turn_count: usize,
@@ -51,21 +51,24 @@ pub enum SimulationState {
 
 impl SimulationState {
     pub fn prepare(
-        creature_count: usize,
-        food_count: usize,
+        daily_creature_count: usize,
         daily_food_count: usize,
         turn_interval: f32,
     ) -> Self {
         SimulationState::Prepare {
-            creature_count,
-            food_count,
+            daily_creature_count,
             daily_food_count,
             turn_interval,
         }
     }
 
-    pub fn running(daily_food_count: usize, turn_interval: f32) -> Self {
+    pub fn running(
+        daily_creature_count: usize,
+        daily_food_count: usize,
+        turn_interval: f32,
+    ) -> Self {
         SimulationState::Running {
+            daily_creature_count,
             daily_food_count,
             turn_timer: Timer::from_seconds(turn_interval, true),
             turn_count: 0,
