@@ -13,6 +13,6 @@ use bevy::prelude::{App, DefaultPlugins};
 fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
-        .add_plugin(NaturalSelectionPlugin::new(1000, 150))
+        .add_plugin(NaturalSelectionPlugin::new(10, 15))
         .run();
 }

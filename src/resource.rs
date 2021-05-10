@@ -34,32 +34,16 @@ impl GameSprites {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq, Hash, Default)]
+pub struct DailyCreatureCount(pub usize);
+#[derive(Clone, Eq, PartialEq, Hash, Default)]
+pub struct DailyFoodCount(pub usize);
+#[derive(Clone, Eq, PartialEq, Hash, Default)]
+pub struct TurnCount(pub usize);
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum SimulationState {
-    Prepare {
-        daily_creature_count: usize,
-        daily_food_count: usize,
-    },
-    Running {
-        daily_creature_count: usize,
-        daily_food_count: usize,
-        turn_count: usize,
-    },
+    Prepare,
+    Running,
 }
 
-impl SimulationState {
-    pub fn prepare(daily_creature_count: usize, daily_food_count: usize) -> Self {
-        SimulationState::Prepare {
-            daily_creature_count,
-            daily_food_count,
-        }
-    }
-
-    pub fn running(daily_creature_count: usize, daily_food_count: usize) -> Self {
-        SimulationState::Running {
-            daily_creature_count,
-            daily_food_count,
-            turn_count: 0,
-        }
-    }
-}

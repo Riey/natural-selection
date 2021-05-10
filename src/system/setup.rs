@@ -32,7 +32,7 @@ pub fn setup(
             "TURN: 0, FPS: 0.0",
             TextStyle {
                 font: font.clone(),
-                font_size: 30.0,
+                font_size: 60.0,
                 color: Color::WHITE,
             },
             TextAlignment {

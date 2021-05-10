@@ -10,9 +10,9 @@ mod ui_update;
 use crate::constants::BACK_COLOR;
 use crate::resource::SimulationState;
 use bevy::prelude::{
-    ClearColor, IntoSystem, ParallelSystemDescriptorCoercion, Plugin, SystemStage,
+    ClearColor, CoreStage, IntoSystem, ParallelSystemDescriptorCoercion, Plugin, State, SystemStage,
 };
-use bevy::{core::FixedTimestep, diagnostic::FrameTimeDiagnosticsPlugin, prelude::CoreStage};
+use bevy::{core::FixedTimestep, diagnostic::FrameTimeDiagnosticsPlugin};
 
 use self::{
     collision::collision_system, life_display::life_display_system, movement::movement_system,
@@ -22,13 +22,14 @@ use self::{
 use bevy::app::AppBuilder;
 
 pub struct NaturalSelectionPlugin {
-    init_simulation_state: SimulationState,
+daily_creature_count: usize, daily_food_count: usize
 }
 
 impl NaturalSelectionPlugin {
     pub fn new(daily_creature_count: usize, daily_food_count: usize) -> Self {
         Self {
-            init_simulation_state: SimulationState::prepare(daily_creature_count, daily_food_count),
+            daily_food_count,
+            daily_creature_count,
         }
     }
 }
@@ -37,7 +38,7 @@ impl Plugin for NaturalSelectionPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default())
             .insert_resource(ClearColor(BACK_COLOR))
-            .insert_resource(self.init_simulation_state.clone())
+            .insert_resource(State::new(SimulationState::Prepare))
             .add_startup_system(setup.system())
             .add_stage_after(
                 CoreStage::Update,
