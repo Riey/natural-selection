@@ -8,11 +8,11 @@ mod utils;
 
 use crate::system::NaturalSelectionPlugin;
 
-use bevy::prelude::{AddDefaultPlugins, App};
+use bevy::prelude::{App, DefaultPlugins};
 
 fn main() {
     App::build()
-        .add_default_plugins()
-        .add_plugin(NaturalSelectionPlugin::new(1000, 150, 0.5))
+        .add_plugins(DefaultPlugins)
+        .add_plugin(NaturalSelectionPlugin::new(1000, 150))
         .run();
 }

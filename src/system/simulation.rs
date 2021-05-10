@@ -6,10 +6,8 @@ pub fn prepare_simulation_system(mut simulation: ResMut<SimulationState>) {
     if let SimulationState::Prepare {
         daily_creature_count,
         daily_food_count,
-        turn_interval,
     } = &mut *simulation
     {
-        *simulation =
-            SimulationState::running(*daily_creature_count, *daily_food_count, *turn_interval);
+        *simulation = SimulationState::running(*daily_creature_count, *daily_food_count);
     }
 }

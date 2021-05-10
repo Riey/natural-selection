@@ -42,7 +42,7 @@ pub enum Instruction {
 
 impl Distribution<Instruction> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Instruction {
-        FromPrimitive::from_u8(rng.gen_range(0, 9)).unwrap_or_else(|| unreachable!())
+        FromPrimitive::from_u8(rng.gen_range(0..9)).unwrap_or_else(|| unreachable!())
     }
 }
 

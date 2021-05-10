@@ -14,7 +14,7 @@ pub fn convert_from_unit(unit: BaseType) -> f32 {
 }
 
 pub fn convert_vec2_to_unit(vec2: Vec2) -> (BaseType, BaseType) {
-    (convert_to_unit(vec2.x()), convert_to_unit(vec2.y()))
+    (convert_to_unit(vec2.x), convert_to_unit(vec2.y))
 }
 
 pub fn calculate_move_cost(distance: f32) -> f32 {
@@ -27,10 +27,10 @@ pub fn is_out_of_box(translation: Vec3) -> bool {
     let min_x = -max_x;
     let min_y = -max_y;
 
-    if translation.x() > min_x
-        && translation.x() < max_x
-        && translation.y() > min_y
-        && translation.y() < max_y
+    if translation.x > min_x
+        && translation.x < max_x
+        && translation.y > min_y
+        && translation.y < max_y
     {
         false
     } else {
@@ -49,9 +49,9 @@ pub fn calculate_random_objects(
     let mut grid = Grid::new(GRID_SIZE.1 / object_height, GRID_SIZE.0 / object_width);
 
     for translation in translations {
-        let x = (((GRID_SIZE.0 / 2) as f32 + translation.x()).max(0.0) as usize) / object_width;
+        let x = (((GRID_SIZE.0 / 2) as f32 + translation.x).max(0.0) as usize) / object_width;
         let x = x.min(grid.cols() - 1);
-        let y = (((GRID_SIZE.1 / 2) as f32 + translation.y()).max(0.0) as usize) / object_height;
+        let y = (((GRID_SIZE.1 / 2) as f32 + translation.y).max(0.0) as usize) / object_height;
         let y = y.min(grid.rows() - 1);
 
         grid[y][x] = true;

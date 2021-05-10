@@ -8,10 +8,10 @@ pub fn collision_system(
     mut creature_query: Query<(&mut Creature, &Transform, &Sprite)>,
     mut food_query: Query<(Entity, &mut Food, &Transform, &Sprite)>,
 ) {
-    for (mut creature, creature_transform, sprite) in &mut creature_query.iter() {
+    for (mut creature, creature_transform, sprite) in creature_query.iter_mut() {
         let creature_size = sprite.size;
 
-        for (food_entity, mut food, food_transform, sprite) in &mut food_query.iter() {
+        for (food_entity, mut food, food_transform, sprite) in food_query.iter_mut() {
             let collision = collide(
                 creature_transform.translation,
                 creature_size,
@@ -22,7 +22,7 @@ pub fn collision_system(
             if let Some(_collision) = collision {
                 // eat
                 if creature.try_eat_food(&mut food) {
-                    commands.despawn(food_entity);
+                    commands.entity(food_entity).despawn_recursive();
                 }
             }
         }

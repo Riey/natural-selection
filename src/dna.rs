@@ -3,11 +3,11 @@ mod bf;
 use self::bf::{run as run_bf, Instruction};
 use crate::utils::{convert_from_unit, convert_vec2_to_unit};
 use bevy::prelude::Vec2;
-use once_cell::sync::Lazy;
 use crossbeam_channel::Receiver;
-use rayon::prelude::*;
+use once_cell::sync::Lazy;
 use rand::distributions::Standard;
 use rand::{thread_rng, Rng};
+use rayon::prelude::*;
 
 static DNA_STORAGE: Lazy<Receiver<DNA>> = Lazy::new(|| {
     let (tx, rx) = crossbeam_channel::bounded(1024);
@@ -58,8 +58,8 @@ impl DNA {
     pub fn mutate(&mut self) {
         let mut rng = thread_rng();
 
-        for _ in 0..rng.gen_range(0, 5) {
-            let idx = rng.gen_range(0, self.code.len());
+        for _ in 0..rng.gen_range(0..5) {
+            let idx = rng.gen_range(0..self.code.len());
             self.code[idx] = rng.gen();
         }
     }

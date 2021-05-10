@@ -86,10 +86,10 @@ impl Creature {
         self.old
     }
 
-    pub fn tick(&mut self, translation: Vec2, delta: f32) -> Result<(), ()> {
+    pub fn tick(&mut self, translation: Vec2, delta: Duration) -> Result<(), ()> {
         self.tick_timer.tick(delta);
 
-        if self.tick_timer.finished {
+        if self.tick_timer.finished() {
             self.velocity = self.dna.move_behaivor(translation)?;
         }
 

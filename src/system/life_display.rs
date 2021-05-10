@@ -6,7 +6,7 @@ pub fn life_display_system(
     sprites: Res<GameSprites>,
     mut creature_query: Query<(&Creature, &mut Handle<ColorMaterial>)>,
 ) {
-    for (creature, mut sprite) in &mut creature_query.iter() {
+    for (creature, mut sprite) in creature_query.iter_mut() {
         *sprite = if creature.will_die() {
             sprites.creature()
         } else {
